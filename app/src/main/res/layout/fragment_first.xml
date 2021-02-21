@@ -7,167 +7,211 @@
     tools:context=".FirstFragment">
 
     <Button
-        android:id="@+id/btnUp"
+        android:id="@+id/btnStar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/up"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn0" />
-
-    <Button
-        android:id="@+id/btnDown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/down"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="27dp"
+        android:text="@string/star"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/btnUp"
-        app:layout_constraintTop_toBottomOf="@+id/btnOk"
-        app:layout_constraintVertical_bias="0.076" />
-
-    <Button
-        android:id="@+id/btnLeft"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/Left"
-        app:layout_constraintBottom_toBottomOf="@+id/btnOk"
-        app:layout_constraintEnd_toStartOf="@+id/btnOk"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/btnStar" />
-
-    <Button
-        android:id="@+id/btnRight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/Right"
-        app:layout_constraintEnd_toEndOf="@+id/btnHash"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/btnOk"
-        app:layout_constraintTop_toTopOf="@+id/btnLeft" />
-
-    <Button
-        android:id="@+id/btn1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/one"
-        app:layout_constraintBottom_toTopOf="@+id/btn4"
-        app:layout_constraintStart_toStartOf="@+id/btn4"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.962" />
-
-    <Button
-        android:id="@+id/btn2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:text="@string/two"
-        app:layout_constraintBottom_toBottomOf="@+id/btn1"
-        app:layout_constraintStart_toEndOf="@+id/btn1" />
-
-    <Button
-        android:id="@+id/btn3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:text="@string/three"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.042"
-        app:layout_constraintStart_toEndOf="@+id/btn2"
-        app:layout_constraintTop_toTopOf="@+id/btn2" />
-
-    <Button
-        android:id="@+id/btn4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/four"
-        app:layout_constraintBottom_toTopOf="@+id/btn7"
-        app:layout_constraintStart_toStartOf="@+id/btn7" />
-
-    <Button
-        android:id="@+id/btn6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/six"
-        app:layout_constraintStart_toStartOf="@+id/btn3"
-        app:layout_constraintTop_toTopOf="@+id/btn5" />
-
-    <Button
-        android:id="@+id/btn9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/nine"
-        app:layout_constraintStart_toStartOf="@+id/btn6"
-        app:layout_constraintTop_toTopOf="@+id/btn8" />
-
-    <Button
-        android:id="@+id/btn8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/eight"
-        app:layout_constraintStart_toStartOf="@+id/btn5"
-        app:layout_constraintTop_toTopOf="@+id/btn7" />
-
-    <Button
-        android:id="@+id/btn5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/five"
-        app:layout_constraintStart_toStartOf="@+id/btn2"
-        app:layout_constraintTop_toTopOf="@+id/btn4" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/btn0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="29dp"
         android:text="@string/zero"
-        app:layout_constraintStart_toStartOf="@+id/btn8"
-        app:layout_constraintTop_toTopOf="@+id/btnStar" />
-
-    <Button
-        android:id="@+id/btnHash"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hash"
-        app:layout_constraintStart_toStartOf="@+id/btn9"
-        app:layout_constraintTop_toTopOf="@+id/btn0" />
-
-    <Button
-        android:id="@+id/btn7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/seven"
-        app:layout_constraintBottom_toTopOf="@+id/btnStar"
-        app:layout_constraintStart_toStartOf="@+id/btnStar" />
-
-    <Button
-        android:id="@+id/btnStar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginBottom="296dp"
-        android:text="@string/star"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnRef"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/btnOk"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/Ok"
-        app:layout_constraintStart_toStartOf="@+id/btn0"
-        app:layout_constraintTop_toBottomOf="@+id/btnUp" />
 
     <Button
         android:id="@+id/btnRef"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="27dp"
         android:text="@string/refresh"
-        app:layout_constraintBottom_toTopOf="@+id/btn3"
-        app:layout_constraintStart_toStartOf="@+id/btn3" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textSeekOne"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="53dp"
+        android:text="Яркость горящих светодиодов"
+        app:layout_constraintStart_toStartOf="@+id/seekParOne"
+        app:layout_constraintTop_toBottomOf="@+id/listPreMode" />
+
+    <SeekBar
+        android:id="@+id/seekParOne"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="31dp"
+        android:max="100"
+        android:min="0"
+        app:layout_constraintBottom_toBottomOf="@+id/textSeekTwo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textSeekOne" />
+
+    <SeekBar
+        android:id="@+id/seekParTwo"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="204dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="204dp"
+        android:max="100"
+        android:min="0"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewConsole2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/listPreMode" />
+
+    <TextView
+        android:id="@+id/textSeekThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="7dp"
+        android:text="Плавность анимации"
+        app:layout_constraintBottom_toTopOf="@+id/seekParThree"
+        app:layout_constraintStart_toStartOf="@+id/seekParThree" />
+
+    <SeekBar
+        android:id="@+id/seekParThree"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="112dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="113dp"
+        android:max="100"
+        android:min="0"
+        app:layout_constraintBottom_toTopOf="@+id/textViewConsole2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekParOne" />
+
+    <SeekBar
+        android:id="@+id/seekParFour"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="29dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="32dp"
+        android:max="100"
+        android:min="0"
+        app:layout_constraintBottom_toBottomOf="@+id/txt3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textSeekFour" />
+
+    <TextView
+        android:id="@+id/textSeekFour"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Чувствительность"
+        app:layout_constraintStart_toStartOf="@+id/seekParFour"
+        app:layout_constraintTop_toBottomOf="@+id/seekParThree" />
+
+    <TextView
+        android:id="@+id/textViewConsole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="TextView"
+        app:layout_constraintStart_toStartOf="@+id/txt3"
+        app:layout_constraintTop_toBottomOf="@+id/txt3"
+        tools:text="0.0" />
+
+    <TextView
+        android:id="@+id/textSeekTwo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="9dp"
+        android:text="Яркость негорящих светодиодов"
+        app:layout_constraintBottom_toTopOf="@+id/seekParTwo"
+        app:layout_constraintStart_toStartOf="@+id/seekParTwo" />
+
+    <Spinner
+        android:id="@+id/listmode"
+        android:layout_width="0dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="33dp"
+        app:layout_constraintBottom_toTopOf="@+id/listPreMode"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/txt1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/listPreMode"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="95dp"
+        app:layout_constraintEnd_toEndOf="@+id/listmode"
+        app:layout_constraintStart_toStartOf="@+id/listmode"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="64dp"
+        android:text="Режим"
+        app:layout_constraintEnd_toStartOf="@+id/listmode"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="14dp"
+        android:text="Подрежим"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/listPreMode" />
+
+    <TextView
+        android:id="@+id/txt3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="58dp"
+        android:text="Отправляемый код"
+        app:layout_constraintStart_toStartOf="@+id/seekParFour"
+        app:layout_constraintTop_toBottomOf="@+id/textSeekFour" />
+
+    <TextView
+        android:id="@+id/txt4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="3dp"
+        android:text="Полученный код"
+        app:layout_constraintBottom_toTopOf="@+id/textViewConsole2"
+        app:layout_constraintEnd_toEndOf="@+id/textViewConsole2" />
+
+    <TextView
+        android:id="@+id/textViewConsole2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="29dp"
+        android:layout_marginBottom="193dp"
+        android:text="0.0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

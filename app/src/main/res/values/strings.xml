@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">btLedControl</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">LED Control</string>
+    <string name="action_settings">Настройки</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -22,9 +22,10 @@
     <string name="seven">7</string>
     <string name="eight">8</string>
     <string name="nine">9</string>
-    <string name="star">*</string>
+    <string name="star">Вкл.Выкл.</string>
     <string name="hash">#</string>
-    <string name="zero">0</string>
+    <string name="zero">Настройка шумов</string>
     <string name="Ok">Ok</string>
-    <string name="refresh">ref</string>
+    <string name="refresh">Переподключиться</string>
+    <string name="set">Отправить</string>
 </resources>
