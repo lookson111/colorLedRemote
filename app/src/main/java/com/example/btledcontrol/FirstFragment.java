@@ -3,9 +3,14 @@ package com.example.btledcontrol;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -26,17 +31,42 @@ import java.util.UUID;
 
 public class FirstFragment extends Fragment {
     private static final String TAG = "bluetooth1";
-
     private static final int REQUEST_ENABLE_BT = 1;
+    ////////////////////////////////////////////////////// Параметры для сохранения настроек
+    private SharedPreferences mSettings;
+    private static final String APP_PREFERENCES = "mysettings";
+    public static final String APP_PREFERENCES_MODE = "mode";
+    public static final String APP_PREFERENCES_BRIGHTNESS = "brightness";
+    public static final String APP_PREFERENCES_EMPTYBRIGHT = "emptyBright";
+    public static final String APP_PREFERENCES_SMOOTH = "smooth";
+    public static final String APP_PREFERENCES_RAINBOWSTEP = "rainbowStep";
+    public static final String APP_PREFERENCES_SMOOTHFREQ = "smoothFreq";
+    public static final String APP_PREFERENCES_MAXCOEFFREQ = "maxCoefFreq";
+    public static final String APP_PREFERENCES_LIGHTCOLOR = "lightColor";
+    public static final String APP_PREFERENCES_LIGHTSAT = "lightSat";
+    public static final String APP_PREFERENCES_COLORSPEED = "colorSpeed";
+    public static final String APP_PREFERENCES_RAINBOWPERIOD = "rainbowPeriod";
+    public static final String APP_PREFERENCES_RAINBOWSTEP2 = "rainbowSteptwo";
+    public static final String APP_PREFERENCES_RUNNINGSPEED = "runningSpeed";
+    public static final String APP_PREFERENCES_HUESTEP = "hueStep";
+    public static final String APP_PREFERENCES_HUESTART = "hueStart";
+    public static final String APP_PREFERENCES_DEBUG = "debug";
+    public static final String APP_PREFERENCES_ADRESS = "adress";
+    ////////////////////////////////////////////////////////
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private OutputStream outStream = null;
     private InputStream inStream = null;
     private static byte[] settings =  new byte[2];
+    private static byte[] eeprom =  new byte[15];
     private static byte[] dimmer =  new byte[5];
-    boolean preModeActive = false;
-    TextView logTextLeft;
-    TextView logTextRight;
+    boolean preModeActive = false, debug;
+    boolean connectionEstablished = false;
+    TextView logTextLeft,logTextRight,logTxt3,logTxt4;
+    SeekBar seekBarOne,seekBarTwo,seekBarThree,seekBarFour;
+    Spinner spinner,spinnerPreModes;
+    Button buttonNoise, buttonOnOff, buttonRes;
+
 
 
     // SPP UUID сервиса
@@ -53,51 +83,99 @@ public class FirstFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_first, container, false);
     }
+
+    //Метод запрашивает поток данных с ардуино и записывает в массив
     public void request(){
-        settings[0] = 10;
+        settings[0] = 1;
+        settings[1] = 2;
         sendDataByte(settings);
 
-        settings = readDataByte();
-        logTextRight.setText(String.valueOf(settings[0] + "." + settings[1]));
+        eeprom = readDataByte();
+        logTextRight.setText(String.valueOf(eeprom[0] + "." + eeprom[1] + "." + eeprom[2] + "." + eeprom[3] + "." + eeprom[4] + "." + eeprom[5] + "." + eeprom[6] + "." + eeprom[7] + "." + eeprom[8] + "." + eeprom[9] + "." + eeprom[10] + "." + eeprom[11] + "." + eeprom[12] + "." + eeprom[13] + "." + eeprom[14]));
         //    }
         //}
     }
 
+    //Метод обновляет текст и отправляет параметр на ардуино
     public void updateText()
     {
         logTextLeft.setText(String.valueOf(settings[0] + "." + settings[1]));
-        sendDataByte(settings);
+        logTextRight.setText(String.valueOf(eeprom[0] + "." + eeprom[1] + "." + eeprom[2] + "." + eeprom[3] + "." + eeprom[4] + "." + eeprom[5] + "." + eeprom[6] + "." + eeprom[7] + "." + eeprom[8] + "." + eeprom[9] + "." + eeprom[10] + "." + eeprom[11] + "." + eeprom[12] + "." + eeprom[13] + "." + eeprom[14]));
+        if (connectionEstablished) sendDataByte(settings);
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
+        mSettings = this.getContext().getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+
         String[] data = {"Обычный", "Радуга спектр", "5 полос", "3 полосы", "Выделение частот", "Огонь", "Радуга", "Бегущие частоты", "Анализатор спектра"};
         String[] preModesOne = {"Все частоты", "Только низкие", "Только средние", "Только высокие"};
         String[] preModesThree = {"Постоянный", "Плавная смена цвета", "Радуга"};
 
         //Создаём экземпляры диммеров и текстбоксов
-        final SeekBar seekBarOne = view.findViewById(R.id.seekParOne);
-        final SeekBar seekBarTwo = view.findViewById(R.id.seekParTwo);
-        final SeekBar seekBarThree = view.findViewById(R.id.seekParThree);
-        final SeekBar seekBarFour = view.findViewById(R.id.seekParFour);
-        TextView textView = view.findViewById(R.id.textViewConsole);
-        TextView textView2 = view.findViewById(R.id.textViewConsole2);
+        seekBarOne = view.findViewById(R.id.seekParOne);
+        seekBarTwo = view.findViewById(R.id.seekParTwo);
+        seekBarThree = view.findViewById(R.id.seekParThree);
+        seekBarFour = view.findViewById(R.id.seekParFour);
         TextView textSeekBarOne = view.findViewById(R.id.textSeekOne);
         TextView textSeekBarTwo = view.findViewById(R.id.textSeekTwo);
         TextView textSeekBarThree = view.findViewById(R.id.textSeekThree);
         TextView textSeekBarFour = view.findViewById(R.id.textSeekFour);
+        logTextLeft = view.findViewById(R.id.textViewConsole);
+        logTextRight = view.findViewById(R.id.textViewConsole2);
+        logTxt3 = view.findViewById(R.id.txt3);
+        logTxt4 = view.findViewById(R.id.txt4);
+        buttonNoise = view.findViewById(R.id.btn0);
+        buttonOnOff = view.findViewById(R.id.btnStar);
+        buttonRes = view.findViewById(R.id.btnRef);
 
-        logTextLeft = textView;
-        logTextRight = textView2;
+        // адаптер для списка режимов и под-режимов
+        ArrayAdapter<String> adapterModes = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, data);
+        ArrayAdapter<String> adapterPreModesOne = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, preModesOne);
+        ArrayAdapter<String> adapterPreModesThree = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, preModesThree);
+        adapterModes.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterPreModesOne.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterPreModesThree.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        //Выпадающий список основных режимов
+        spinner = view.findViewById(R.id.listmode);
+        //Выпадающий список под-режимов
+        spinnerPreModes = view.findViewById(R.id.listPreMode);
+        spinner.setAdapter(adapterModes);
+        // устанавливаем обработчик нажатия списка режимов
+        // Адреса параметров
+        byte onoff = 1;              //1.x Включение отключение
+        byte noiseSet = 2;           //2.x Настройка шумов
+        byte mode = 3;               //3.x Режим {eeprom[0]}
+        byte preMode = 4;            //4.x Под режим
+        byte brightness = 5;         //5.x Яркость горящих светодиодов {eeprom[1]}
+        byte emptyBright = 6;        //6.x Яркость негорящих светодиодов {eeprom[2]}
+        byte smooth = 7;             //7.x Плавность спектра (SMOOTH, режим 1,2) {eeprom[3]}
+        byte rainbowStep = 8;        //8.x Скорость движения (RAINBOW_STEP режим 2) {eeprom[4]}
+        byte smoothFreq = 9;         //9.x Плавность включения (SMOOTH_FREQ режим 3,4,5) {eeprom[5]}
+        byte maxCoefFreq = 10;       //10.x Чувствительность (MAX_COEF_FREQ режим 3,4,5,8) {eeprom[6]}
+        byte lightColor = 11;        //11.x Настройка цвета (LIGHT_COLOR режим 7) {eeprom[7]}
+        byte lightSat = 12;          //12.x Натройка насыщенности (LIGHT_SAT режим 7) {eeprom[8]}
+        byte colorSpeed = 13;        //13.x Скорость изменения (COLOR_SPEED режим 7) {eeprom[9]}
+        byte rainbowPeriod = 14;     //14.x Скорость движения (RAINBOW_PERIOD режим 7) {eeprom[10]}
+        byte rainbowStepTwo = 15;    //15.x Шаг цвета (RAINBOW_STEP_2 режим 7) {eeprom[11]}
+        byte runningSpeed = 16;      //16.x Скорость движения (RUNNING_SPEED режим 8) {eeprom[12]}
+        byte hueStep = 17;           //17.x Шаг изменения цвета (HUE_STEP режим 9) {eeprom[13]}
+        byte hueStart = 18;          //18.x Цвет (HUE_START режим 9) {eeprom[14]}
+
+        dimmer[1] = brightness;
+        dimmer[2] = emptyBright;
+
+
         //Изменение первого диммера
         seekBarOne.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 settings[0]= dimmer[1];
-                settings[1]= (byte)progress;
-
+                settings[1] = (byte)progress;
+                eeprom[1] = (byte)progress; //Кидаем в массив для последующего сохранения
             }
 
             @Override
@@ -116,7 +194,7 @@ public class FirstFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 settings[0]= dimmer[2];
                 settings[1]= (byte)progress;
-
+                eeprom[2] = (byte)progress; //Кидаем в массив для последующего сохранения
             }
 
             @Override
@@ -135,7 +213,13 @@ public class FirstFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 settings[0]= dimmer[3];
                 settings[1]= (byte)progress;
-
+                if (dimmer[3] == smooth) eeprom[3] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == smoothFreq) eeprom[5] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == lightColor) eeprom[7] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == lightSat) eeprom[8] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == rainbowPeriod) eeprom[10] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == runningSpeed) eeprom[12] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == hueStep) eeprom[13] = (byte)progress; //Кидаем в массив для последующего сохранения
             }
 
             @Override
@@ -152,9 +236,14 @@ public class FirstFragment extends Fragment {
         seekBarFour.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                settings[0]= dimmer[4];
-                settings[1]= (byte)progress;
-
+                settings[0] = dimmer[4];
+                settings[1] = (byte)progress;
+                if (dimmer[4] == rainbowStep) eeprom[4] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[4] == maxCoefFreq) eeprom[6] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[4] == lightSat) eeprom[8] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[4] == colorSpeed) eeprom[9] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[4] == rainbowStepTwo) eeprom[11] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[4] == hueStart) eeprom[14] = (byte)progress; //Кидаем в массив для последующего сохранения
             }
 
             @Override
@@ -168,42 +257,6 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        // адаптер для списка режимов и под-режимов
-        ArrayAdapter<String> adapterModes = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, data);
-        ArrayAdapter<String> adapterPreModesOne = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, preModesOne);
-        ArrayAdapter<String> adapterPreModesThree = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, preModesThree);
-        adapterModes.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapterPreModesOne.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapterPreModesThree.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        //Выпадающий список основных режимов
-        Spinner spinner = view.findViewById(R.id.listmode);
-        //Выпадающий список под-режимов
-        Spinner spinnerPreModes = view.findViewById(R.id.listPreMode);
-        spinner.setAdapter(adapterModes);
-        // устанавливаем обработчик нажатия списка режимов
-        // Адреса параметров
-        byte onoff = 1;              //1.x Включение отключение
-        byte noiseSet = 2;           //2.x Настройка шумов
-        byte mode = 3;               //3.x Режим
-        byte preMode = 4;            //4.x Под режим
-        byte brightness = 5;         //5.x Яркость горящих светодиодов
-        byte emptyBright = 6;        //6.x Яркость негорящих светодиодов
-        byte smooth = 7;             //7.x Плавность спектра (SMOOTH, режим 1,2)
-        byte rainbowStep = 8;        //8.x Скорость движения (RAINBOW_STEP режим 2)
-        byte smoothFreq = 9;         //9.x Плавность включения (SMOOTH_FREQ режим 3,4,5)
-        byte maxCoefFreq = 10;       //10.x Чувствительность (MAX_COEF_FREQ режим 3,4,5,8)
-        byte lightColor = 11;        //11.x Настройка цвета (LIGHT_COLOR режим 7)
-        byte lightSat = 12;          //12.x Натройка насыщенности (LIGHT_SAT режим 7)
-        byte colorSpeed = 13;        //13.x Скорость изменения (COLOR_SPEED режим 7)
-        byte rainbowPeriod = 14;     //14.x Скорость движения (RAINBOW_PERIOD режим 7)
-        byte rainbowStepTwo = 15;    //15.x Шаг цвета (RAINBOW_STEP_2 режим 7)
-        byte runningSpeed = 16;      //16.x Скорость движения (RUNNING_SPEED режим 8)
-        byte hueStep = 17;           //17.x Шаг изменения цвета (HUE_STEP режим 9)
-        byte hueStart = 18;          //18.x Цвет (HUE_START режим 9)
-
-        dimmer[1] = brightness;
-        dimmer[2] = emptyBright;
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -213,117 +266,136 @@ public class FirstFragment extends Fragment {
                 settings[0] = mode;
                 settings[1]= (byte)position;
                 preModeActive = false;
+                eeprom[0] = (byte)position; //Кидаем в массив для последующего сохранения
                 switch (position){
                     case 0: //Обычный
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(false);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(false);
+                            spinnerPreModes.setEnabled(false);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Плавность спектра");
-                        spinnerPreModes.setEnabled(false);
                         dimmer[3] = smooth;
                         break;
                     case 1: //Радуга спектр
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(false);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Плавность спектра");
                         textSeekBarFour.setText("Скорость движения радуги");
-                        spinnerPreModes.setEnabled(false);
                         dimmer[3] = smooth;
                         dimmer[4] = rainbowStep;
                         break;
                     case 2: //5 полос
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(false);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Плавность включения");
                         textSeekBarFour.setText("Чувствительность");
-                        spinnerPreModes.setEnabled(false);
                         dimmer[3] = smoothFreq;
                         dimmer[4] = maxCoefFreq;
                         break;
                     case 3: //3 полосы
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(false);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Плавность анимации");
                         textSeekBarFour.setText("Чувствительность");
-                        spinnerPreModes.setEnabled(false);
                         dimmer[3] = smoothFreq;
                         dimmer[4] = maxCoefFreq;
                         break;
                     case 4: //Выделение частот
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(true);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Плавность анимации");
                         textSeekBarFour.setText("Чувствительность");
-                        spinnerPreModes.setEnabled(true);
                         spinnerPreModes.setAdapter(adapterPreModesOne);
                         dimmer[3] = smoothFreq;
                         dimmer[4] = maxCoefFreq;
                         break;
                     case 5: //Огонь
-                        seekBarOne.setEnabled(false);
-                        seekBarTwo.setEnabled(false);
-                        seekBarThree.setEnabled(false);
-                        seekBarFour.setEnabled(false);
-                        spinnerPreModes.setEnabled(false);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(false);
+                            seekBarTwo.setEnabled(false);
+                            seekBarThree.setEnabled(false);
+                            seekBarFour.setEnabled(false);
+                            spinnerPreModes.setEnabled(false);
+                        }
                         break;
                     case 6: //Радуга
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(true);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Настройка цвета");
                         textSeekBarFour.setText("Настройка насыщенности");
-                        spinnerPreModes.setEnabled(true);
                         spinnerPreModes.setAdapter(adapterPreModesThree);
                         dimmer[3] = lightColor;
                         dimmer[4] = lightSat;
                         break;
                     case 7: //Бегущие частоты
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(true);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Скорость");
                         textSeekBarFour.setText("Чувствительность");
-                        spinnerPreModes.setEnabled(true);
                         spinnerPreModes.setAdapter(adapterPreModesOne);
                         dimmer[3] = runningSpeed;
                         dimmer[4] = maxCoefFreq;
 
                         break;
                     case 8: //Анализатор спектра
-                        seekBarOne.setEnabled(true);
-                        seekBarTwo.setEnabled(true);
-                        seekBarThree.setEnabled(true);
-                        seekBarFour.setEnabled(true);
+                        if (connectionEstablished) {
+                            seekBarOne.setEnabled(true);
+                            seekBarTwo.setEnabled(true);
+                            seekBarThree.setEnabled(true);
+                            seekBarFour.setEnabled(true);
+                            spinnerPreModes.setEnabled(false);
+                        }
                         textSeekBarOne.setText("Яркость горящих светодиодов");
                         textSeekBarTwo.setText("Яркость негорящих светодиодов");
                         textSeekBarThree.setText("Шаг изменения цвета");
                         textSeekBarFour.setText("Цвет");
-                        spinnerPreModes.setEnabled(false);
                         dimmer[3] = hueStep;
                         dimmer[4] = hueStart;
                         break;
@@ -334,6 +406,7 @@ public class FirstFragment extends Fragment {
                 if (seekBarThree.isEnabled() == false) textSeekBarThree.setText("Параметр отключён");
                 if (seekBarFour.isEnabled() == false) textSeekBarFour.setText("Параметр отключён");
                 updateText();
+                updateView();
             }
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
@@ -380,7 +453,7 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.btn0).setOnClickListener( new View.OnClickListener() {
+        buttonNoise.setOnClickListener( new View.OnClickListener() {
             public void onClick(View v) {
                 settings[0] = noiseSet;
                 settings[1] = 1;
@@ -390,7 +463,7 @@ public class FirstFragment extends Fragment {
         });
 
 
-        view.findViewById(R.id.btnStar).setOnClickListener(new View.OnClickListener() {
+        buttonOnOff.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 settings[0] = onoff;
                 settings[1] = 1;
@@ -399,23 +472,102 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.btnRef).setOnClickListener(new View.OnClickListener() {
+        buttonRes.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //onPause();
-                //onResume();
-                request();
-                Toast.makeText(v.getContext(), "Подключение к устройству", Toast.LENGTH_SHORT).show();
+                onPause();
+                onResume();
+                //request();
+                Toast.makeText(v.getContext(), "Попытка подключения", Toast.LENGTH_SHORT).show();
             }
         });
+
+    }
+    //Получаем настройки из файла
+    public void getSettings() {
+        //Получаем число из настроек
+        if (mSettings.contains(APP_PREFERENCES_MODE))        { eeprom[0] = (byte)mSettings.getInt(APP_PREFERENCES_MODE,0); }
+        if (mSettings.contains(APP_PREFERENCES_BRIGHTNESS))  { eeprom[1] = (byte)mSettings.getInt(APP_PREFERENCES_BRIGHTNESS,0); }
+        if (mSettings.contains(APP_PREFERENCES_EMPTYBRIGHT)) { eeprom[2] = (byte)mSettings.getInt(APP_PREFERENCES_EMPTYBRIGHT,0); }
+        if (mSettings.contains(APP_PREFERENCES_SMOOTH))      { eeprom[3] = (byte)mSettings.getInt(APP_PREFERENCES_SMOOTH,0); }
+        if (mSettings.contains(APP_PREFERENCES_RAINBOWSTEP)) { eeprom[4] = (byte)mSettings.getInt(APP_PREFERENCES_RAINBOWSTEP,0); }
+        if (mSettings.contains(APP_PREFERENCES_SMOOTHFREQ))  { eeprom[5] = (byte)mSettings.getInt(APP_PREFERENCES_SMOOTHFREQ,0); }
+        if (mSettings.contains(APP_PREFERENCES_MAXCOEFFREQ)) { eeprom[6] = (byte)mSettings.getInt(APP_PREFERENCES_MAXCOEFFREQ,0); }
+        if (mSettings.contains(APP_PREFERENCES_LIGHTCOLOR))  { eeprom[7] = (byte)mSettings.getInt(APP_PREFERENCES_LIGHTCOLOR,0); }
+        if (mSettings.contains(APP_PREFERENCES_LIGHTSAT))    { eeprom[8] = (byte)mSettings.getInt(APP_PREFERENCES_LIGHTSAT,0); }
+        if (mSettings.contains(APP_PREFERENCES_COLORSPEED))  { eeprom[9] = (byte)mSettings.getInt(APP_PREFERENCES_COLORSPEED,0); }
+        if (mSettings.contains(APP_PREFERENCES_RAINBOWPERIOD)) { eeprom[10] = (byte)mSettings.getInt(APP_PREFERENCES_RAINBOWPERIOD,0); }
+        if (mSettings.contains(APP_PREFERENCES_RAINBOWSTEP2)) { eeprom[11] = (byte)mSettings.getInt(APP_PREFERENCES_RAINBOWSTEP2,0); }
+        if (mSettings.contains(APP_PREFERENCES_RUNNINGSPEED)) { eeprom[12] = (byte)mSettings.getInt(APP_PREFERENCES_RUNNINGSPEED,0); }
+        if (mSettings.contains(APP_PREFERENCES_HUESTEP))     { eeprom[13] = (byte)mSettings.getInt(APP_PREFERENCES_HUESTEP,0); }
+        if (mSettings.contains(APP_PREFERENCES_HUESTART))    { eeprom[14] = (byte)mSettings.getInt(APP_PREFERENCES_HUESTART,0); }
+        if (mSettings.contains(APP_PREFERENCES_DEBUG))        { debug = mSettings.getBoolean(APP_PREFERENCES_DEBUG,false); }
+        if (mSettings.contains(APP_PREFERENCES_ADRESS))       { address = mSettings.getString(APP_PREFERENCES_ADRESS,"20:14:05:09:20:37"); }
+        spinner.setSelection(eeprom[0]);
+        updateView();
+        }
+    //Обновляем значения на экране
+    private void updateView(){
+        if (debug) {
+            logTextLeft.setVisibility(View.VISIBLE);
+            logTextRight.setVisibility(View.VISIBLE);
+            logTxt3.setVisibility(View.VISIBLE);
+            logTxt4.setVisibility(View.VISIBLE);
+        } else {
+            logTextLeft.setVisibility(View.INVISIBLE);
+            logTextRight.setVisibility(View.INVISIBLE);
+            logTxt3.setVisibility(View.INVISIBLE);
+            logTxt4.setVisibility(View.INVISIBLE);
+        }
+        int progressThree = 0, progressFour = 0;
+        if (eeprom[0] == 0) progressThree = eeprom[3]; //Если режим нулевой, достаём третье значение
+        if (eeprom[0] == 1) { progressThree = eeprom[3]; progressFour = eeprom[4]; }
+        if (eeprom[0] == 2) { progressThree = eeprom[5]; progressFour = eeprom[6]; }
+        if (eeprom[0] == 3) { progressThree = eeprom[5]; progressFour = eeprom[6]; }
+        if (eeprom[0] == 4) { progressThree = eeprom[5]; progressFour = eeprom[6]; }
+        if (eeprom[0] == 6) { progressThree = eeprom[7]; progressFour = eeprom[8]; }
+        if (eeprom[0] == 7) { progressThree = eeprom[12]; progressFour = eeprom[6]; }
+        if (eeprom[0] == 8) { progressThree = eeprom[13]; progressFour = eeprom[14]; }
+        seekBarOne.setProgress(eeprom[1]);
+        seekBarTwo.setProgress(eeprom[2]);
+        if (eeprom[0] != 5) seekBarThree.setProgress(progressThree); //Защита от изменений, есди режим пятый
+        if (eeprom[0] != 0 && eeprom[0] != 5) seekBarFour.setProgress(progressFour);
+        logTextRight.setText(String.valueOf(eeprom[0] + "." + eeprom[1] + "." + eeprom[2] + "." + eeprom[3] + "." + eeprom[4] + "." + eeprom[5] + "." + eeprom[6] + "." + eeprom[7] + "." + eeprom[8] + "." + eeprom[9] + "." + eeprom[10] + "." + eeprom[11] + "." + eeprom[12] + "." + eeprom[13] + "." + eeprom[14]));
+
+    }
+
+    private void disableUI(){
+        spinner.setEnabled(false);
+        spinnerPreModes.setEnabled(false);
+        seekBarOne.setEnabled(false);
+        seekBarTwo.setEnabled(false);
+        seekBarThree.setEnabled(false);
+        seekBarFour.setEnabled(false);
+        buttonNoise.setEnabled(false);
+        buttonOnOff.setEnabled(false);
+        buttonRes.setEnabled(false);
+    }
+
+    private void enableUI(){
+        spinner.setEnabled(true);
+        spinnerPreModes.setEnabled(true);
+        seekBarOne.setEnabled(true);
+        seekBarTwo.setEnabled(true);
+        seekBarThree.setEnabled(true);
+        seekBarFour.setEnabled(true);
+        buttonNoise.setEnabled(true);
+        buttonOnOff.setEnabled(true);
+        buttonRes.setEnabled(true);
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        Toast.makeText(getActivity(), "Восстанавливаем соединение", Toast.LENGTH_SHORT).show();
+        getSettings();
         //Log.d(TAG, "...onResume - попытка соединения...");
-
         // Set up a pointer to the remote node using it's address.
+        disableUI();
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
 
         // Two things are needed to make a connection:
@@ -424,8 +576,9 @@ public class FirstFragment extends Fragment {
         //     UUID for SPP.
         try {
             btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+
         } catch (IOException e) {
-            errorExit("Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
+            errorExit("Критическая ошибка", "В методе onResume() не удалось открыть сокет: " + e.getMessage() + ".");
         }
 
         // Discovery is resource intensive.  Make sure it isn't going on
@@ -437,11 +590,14 @@ public class FirstFragment extends Fragment {
         try {
             btSocket.connect();
             //Log.d(TAG, "...Соединение установлено и готово к передачи данных...");
+            Toast.makeText(getActivity(), "Соединение установлено", Toast.LENGTH_SHORT).show();
+            enableUI();
+            connectionEstablished = true;
         } catch (IOException e) {
             try {
                 btSocket.close();
             } catch (IOException e2) {
-                errorExit("Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                errorExit("Критическая ошибка", "В методе onResume() не удалось закрыть сокет во  время установки соединения" + e2.getMessage() + ".");
             }
         }
 
@@ -452,28 +608,49 @@ public class FirstFragment extends Fragment {
             outStream = btSocket.getOutputStream();
             inStream = btSocket.getInputStream();
         } catch (IOException e) {
-            errorExit("Fatal Error", "In onResume() and output stream creation failed:" + e.getMessage() + ".");
+            errorExit("Критическая ошибка", "В методе onResume() не удалось создать выходной поток:" + e.getMessage() + ".");
         }
     }
+
 
     @Override
     public void onPause() {
         super.onPause();
-
+        disableUI();
         //Log.d(TAG, "...In onPause()...");
 
-        if (outStream != null) {
-            try {
-                outStream.flush();
-            } catch (IOException e) {
-                errorExit("Fatal Error", "In onPause() and failed to flush output stream: " + e.getMessage() + ".");
-            }
-        }
+        //if (outStream != null) {
+        //   try {
+        //        outStream.flush();
+        //    } catch (IOException e) {
+        //        errorExit("Критическая ошибка", "В методе onPause() не удалось сбросить буфер потока: " + e.getMessage() + ".");
+         //   }
+        //}
+
+        //Сохранение данных
+        SharedPreferences.Editor editor = mSettings.edit();
+        editor.putInt(APP_PREFERENCES_MODE, eeprom[0]);
+        editor.putInt(APP_PREFERENCES_BRIGHTNESS, eeprom[1]);
+        editor.putInt(APP_PREFERENCES_EMPTYBRIGHT, eeprom[2]);
+        editor.putInt(APP_PREFERENCES_SMOOTH, eeprom[3]);
+        editor.putInt(APP_PREFERENCES_RAINBOWSTEP, eeprom[4]);
+        editor.putInt(APP_PREFERENCES_SMOOTHFREQ, eeprom[5]);
+        editor.putInt(APP_PREFERENCES_MAXCOEFFREQ, eeprom[6]);
+        editor.putInt(APP_PREFERENCES_LIGHTCOLOR, eeprom[7]);
+        editor.putInt(APP_PREFERENCES_LIGHTSAT, eeprom[8]);
+        editor.putInt(APP_PREFERENCES_COLORSPEED, eeprom[9]);
+        editor.putInt(APP_PREFERENCES_RAINBOWPERIOD, eeprom[10]);
+        editor.putInt(APP_PREFERENCES_RAINBOWSTEP2, eeprom[11]);
+        editor.putInt(APP_PREFERENCES_RUNNINGSPEED, eeprom[12]);
+        editor.putInt(APP_PREFERENCES_HUESTEP, eeprom[13]);
+        editor.putInt(APP_PREFERENCES_HUESTART, eeprom[14]);
+        editor.apply();
 
         try     {
             btSocket.close();
+            connectionEstablished = false;
         } catch (IOException e2) {
-            errorExit("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".");
+            errorExit("Критическая ошибка", "В методе onPause() не удалось закрыть сокет." + e2.getMessage() + ".");
         }
     }
 

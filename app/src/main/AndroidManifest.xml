@@ -13,6 +13,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BtLedControl">
         <activity
+            android:name=".Settings"
+            android:label="@string/action_settings"
+            android:theme="@style/Theme.BtLedControl.NoActionBar"></activity>
+        <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.BtLedControl.NoActionBar">
@@ -22,6 +26,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SecondFragment"
+            android:label="@string/action_settings"></activity>
     </application>
 
 </manifest>

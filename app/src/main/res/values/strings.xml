@@ -22,10 +22,11 @@
     <string name="seven">7</string>
     <string name="eight">8</string>
     <string name="nine">9</string>
-    <string name="star">Вкл.Выкл.</string>
+    <string name="star"></string>
     <string name="hash">#</string>
     <string name="zero">Настройка шумов</string>
     <string name="Ok">Ok</string>
     <string name="refresh">Переподключиться</string>
     <string name="set">Отправить</string>
+    <string name="title_activity_settings">Settings</string>
 </resources>
