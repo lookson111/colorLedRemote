@@ -10,34 +10,15 @@
         android:id="@+id/btnStar"
         android:layout_width="70dp"
         android:layout_height="71dp"
-        android:layout_marginStart="90dp"
+        android:layout_marginStart="30dp"
         android:layout_marginBottom="27dp"
         android:text="@string/star"
         app:icon="@android:drawable/ic_lock_power_off"
         app:iconPadding="20dp"
+        android:hapticFeedbackEnabled="true"
         app:iconSize="40dp"
         app:iconTint="#3BFF45"
         app:iconTintMode="src_in"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnRef" />
-
-    <Button
-        android:id="@+id/btn0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginBottom="29dp"
-        android:text="@string/zero"
-        app:layout_constraintBottom_toTopOf="@+id/btnRef"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/btnRef"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginBottom="27dp"
-        android:text="@string/refresh"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -60,6 +41,7 @@
         android:max="100"
         android:min="0"
         android:progress="100"
+        android:hapticFeedbackEnabled="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textSeekOne" />
 
@@ -72,6 +54,7 @@
         android:max="100"
         android:min="0"
         android:progress="30"
+        android:hapticFeedbackEnabled="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textSeekTwo" />
 
@@ -93,6 +76,7 @@
         android:layout_marginTop="8dp"
         android:max="100"
         android:min="0"
+        android:hapticFeedbackEnabled="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textSeekThree" />
 
@@ -104,6 +88,7 @@
         android:layout_marginTop="9dp"
         android:max="100"
         android:min="0"
+        android:hapticFeedbackEnabled="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textSeekFour" />
 
@@ -209,5 +194,15 @@
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txt4" />
+
+    <TextView
+        android:id="@+id/textNotice"
+        android:layout_width="193dp"
+        android:layout_height="68dp"
+        android:layout_marginStart="31dp"
+        android:layout_marginBottom="29dp"
+        android:text="Интерфейс отключён пока соединение не будет восстановлено."
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnStar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

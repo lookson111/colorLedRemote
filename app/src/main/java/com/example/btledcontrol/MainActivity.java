@@ -16,22 +16,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-
+    FirstFragment firstFragment = (FirstFragment) getSupportFragmentManager().findFragmentById(R.id.FirstFragment);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-/*
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+
     }
 
     @Override
@@ -40,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -50,10 +41,18 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Intent intent = new Intent(MainActivity.this, Settings.class);
+            Intent intent = new Intent(this, Settings.class);
             startActivity(intent);
             return true;
         }
+//        if (id == R.id.action_noise) {
+//            firstFragment.setNoiseLevel();
+//            return true;
+//        }
+//        if (id == R.id.action_reset) {
+//            firstFragment.resetConnection();
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }

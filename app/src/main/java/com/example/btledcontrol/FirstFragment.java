@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +21,6 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+
 
 public class FirstFragment extends Fragment {
     private static final String TAG = "bluetooth1";
@@ -62,10 +63,30 @@ public class FirstFragment extends Fragment {
     private static byte[] dimmer =  new byte[5];
     boolean preModeActive = false, debug;
     boolean connectionEstablished = false;
-    TextView logTextLeft,logTextRight,logTxt3,logTxt4;
+    TextView logTextLeft,logTextRight,logTxt3,logTxt4,textNote;
     SeekBar seekBarOne,seekBarTwo,seekBarThree,seekBarFour;
     Spinner spinner,spinnerPreModes;
-    Button buttonNoise, buttonOnOff, buttonRes;
+    Button buttonOnOff;
+    // Адреса параметров ////////////////////////////////////////////////////////////////////////////
+    byte onoff = 1;              //1.x Включение отключение
+    byte noiseSet = 2;           //2.x Настройка шумов
+    byte mode = 3;               //3.x Режим {eeprom[0]}
+    byte preMode = 4;            //4.x Под режим
+    byte brightness = 5;         //5.x Яркость горящих светодиодов {eeprom[1]}
+    byte emptyBright = 6;        //6.x Яркость негорящих светодиодов {eeprom[2]}
+    byte smooth = 7;             //7.x Плавность спектра (SMOOTH, режим 1,2) {eeprom[3]}
+    byte rainbowStep = 8;        //8.x Скорость движения (RAINBOW_STEP режим 2) {eeprom[4]}
+    byte smoothFreq = 9;         //9.x Плавность включения (SMOOTH_FREQ режим 3,4,5) {eeprom[5]}
+    byte maxCoefFreq = 10;       //10.x Чувствительность (MAX_COEF_FREQ режим 3,4,5,8) {eeprom[6]}
+    byte lightColor = 11;        //11.x Настройка цвета (LIGHT_COLOR режим 7) {eeprom[7]}
+    byte lightSat = 12;          //12.x Натройка насыщенности (LIGHT_SAT режим 7) {eeprom[8]}
+    byte colorSpeed = 13;        //13.x Скорость изменения (COLOR_SPEED режим 7) {eeprom[9]}
+    byte rainbowPeriod = 14;     //14.x Скорость движения (RAINBOW_PERIOD режим 7) {eeprom[10]}
+    byte rainbowStepTwo = 15;    //15.x Шаг цвета (RAINBOW_STEP_2 режим 7) {eeprom[11]}
+    byte runningSpeed = 16;      //16.x Скорость движения (RUNNING_SPEED режим 8) {eeprom[12]}
+    byte hueStep = 17;           //17.x Шаг изменения цвета (HUE_STEP режим 9) {eeprom[13]}
+    byte hueStart = 18;          //18.x Цвет (HUE_START режим 9) {eeprom[14]}
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -85,7 +106,7 @@ public class FirstFragment extends Fragment {
     }
 
     //Метод запрашивает поток данных с ардуино и записывает в массив
-    public void request(){
+    private void request(){
         settings[0] = 1;
         settings[1] = 2;
         sendDataByte(settings);
@@ -97,7 +118,7 @@ public class FirstFragment extends Fragment {
     }
 
     //Метод обновляет текст и отправляет параметр на ардуино
-    public void updateText()
+    private void updateText()
     {
         logTextLeft.setText(String.valueOf(settings[0] + "." + settings[1]));
         logTextRight.setText(String.valueOf(eeprom[0] + "." + eeprom[1] + "." + eeprom[2] + "." + eeprom[3] + "." + eeprom[4] + "." + eeprom[5] + "." + eeprom[6] + "." + eeprom[7] + "." + eeprom[8] + "." + eeprom[9] + "." + eeprom[10] + "." + eeprom[11] + "." + eeprom[12] + "." + eeprom[13] + "." + eeprom[14]));
@@ -106,6 +127,7 @@ public class FirstFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setHasOptionsMenu(true);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
         mSettings = this.getContext().getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
@@ -127,9 +149,8 @@ public class FirstFragment extends Fragment {
         logTextRight = view.findViewById(R.id.textViewConsole2);
         logTxt3 = view.findViewById(R.id.txt3);
         logTxt4 = view.findViewById(R.id.txt4);
-        buttonNoise = view.findViewById(R.id.btn0);
+        textNote = view.findViewById(R.id.textNotice);
         buttonOnOff = view.findViewById(R.id.btnStar);
-        buttonRes = view.findViewById(R.id.btnRef);
 
         // адаптер для списка режимов и под-режимов
         ArrayAdapter<String> adapterModes = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, data);
@@ -145,25 +166,6 @@ public class FirstFragment extends Fragment {
         spinnerPreModes = view.findViewById(R.id.listPreMode);
         spinner.setAdapter(adapterModes);
         // устанавливаем обработчик нажатия списка режимов
-        // Адреса параметров
-        byte onoff = 1;              //1.x Включение отключение
-        byte noiseSet = 2;           //2.x Настройка шумов
-        byte mode = 3;               //3.x Режим {eeprom[0]}
-        byte preMode = 4;            //4.x Под режим
-        byte brightness = 5;         //5.x Яркость горящих светодиодов {eeprom[1]}
-        byte emptyBright = 6;        //6.x Яркость негорящих светодиодов {eeprom[2]}
-        byte smooth = 7;             //7.x Плавность спектра (SMOOTH, режим 1,2) {eeprom[3]}
-        byte rainbowStep = 8;        //8.x Скорость движения (RAINBOW_STEP режим 2) {eeprom[4]}
-        byte smoothFreq = 9;         //9.x Плавность включения (SMOOTH_FREQ режим 3,4,5) {eeprom[5]}
-        byte maxCoefFreq = 10;       //10.x Чувствительность (MAX_COEF_FREQ режим 3,4,5,8) {eeprom[6]}
-        byte lightColor = 11;        //11.x Настройка цвета (LIGHT_COLOR режим 7) {eeprom[7]}
-        byte lightSat = 12;          //12.x Натройка насыщенности (LIGHT_SAT режим 7) {eeprom[8]}
-        byte colorSpeed = 13;        //13.x Скорость изменения (COLOR_SPEED режим 7) {eeprom[9]}
-        byte rainbowPeriod = 14;     //14.x Скорость движения (RAINBOW_PERIOD режим 7) {eeprom[10]}
-        byte rainbowStepTwo = 15;    //15.x Шаг цвета (RAINBOW_STEP_2 режим 7) {eeprom[11]}
-        byte runningSpeed = 16;      //16.x Скорость движения (RUNNING_SPEED режим 8) {eeprom[12]}
-        byte hueStep = 17;           //17.x Шаг изменения цвета (HUE_STEP режим 9) {eeprom[13]}
-        byte hueStart = 18;          //18.x Цвет (HUE_START режим 9) {eeprom[14]}
 
         dimmer[1] = brightness;
         dimmer[2] = emptyBright;
@@ -185,6 +187,7 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBarOne.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                 updateText();
             }
         });
@@ -204,6 +207,7 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBarTwo.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                 updateText();
             }
         });
@@ -229,6 +233,7 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBarThree.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                 updateText();
             }
         });
@@ -253,6 +258,7 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBarFour.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                 updateText();
             }
         });
@@ -453,18 +459,9 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        buttonNoise.setOnClickListener( new View.OnClickListener() {
-            public void onClick(View v) {
-                settings[0] = noiseSet;
-                settings[1] = 1;
-                updateText();
-                Toast.makeText(v.getContext(), "Настройка шумов", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
         buttonOnOff.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                buttonOnOff.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                 settings[0] = onoff;
                 settings[1] = 1;
                 updateText();
@@ -472,18 +469,35 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        buttonRes.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                onPause();
-                onResume();
-                //request();
-                Toast.makeText(v.getContext(), "Попытка подключения", Toast.LENGTH_SHORT).show();
-            }
-        });
-
     }
+
+    //Инициализация меню
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_fragment, menu);
+    }
+    //Реакция на события в меню
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        if (id == R.id.action_noise) {
+            setNoiseLevel();
+            return true;
+        }
+        if (id == R.id.action_reset) {
+            resetConnection();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     //Получаем настройки из файла
-    public void getSettings() {
+    private void getSettings() {
         //Получаем число из настроек
         if (mSettings.contains(APP_PREFERENCES_MODE))        { eeprom[0] = (byte)mSettings.getInt(APP_PREFERENCES_MODE,0); }
         if (mSettings.contains(APP_PREFERENCES_BRIGHTNESS))  { eeprom[1] = (byte)mSettings.getInt(APP_PREFERENCES_BRIGHTNESS,0); }
@@ -505,6 +519,7 @@ public class FirstFragment extends Fragment {
         spinner.setSelection(eeprom[0]);
         updateView();
         }
+
     //Обновляем значения на экране
     private void updateView(){
         if (debug) {
@@ -535,28 +550,45 @@ public class FirstFragment extends Fragment {
 
     }
 
+    //Метод активации настройки шумов
+    public void setNoiseLevel() {
+        settings[0] = noiseSet;
+        settings[1] = 1; //При передаче единицы, метод активируется
+        if (connectionEstablished) {
+            Toast.makeText(getActivity(), "Настройка шумов", Toast.LENGTH_SHORT).show();
+            updateText();
+        } else  {
+            Toast.makeText(getActivity(), "Нет соединения.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    //Метод сброса подключения и попытки соединения
+    public void resetConnection() {
+        if (connectionEstablished) onPause(); else onResume();
+        //request();
+        Toast.makeText(getContext(), "Попытка подключения", Toast.LENGTH_SHORT).show();
+    }
+
     private void disableUI(){
+        textNote.setVisibility(View.VISIBLE);
         spinner.setEnabled(false);
         spinnerPreModes.setEnabled(false);
         seekBarOne.setEnabled(false);
         seekBarTwo.setEnabled(false);
         seekBarThree.setEnabled(false);
         seekBarFour.setEnabled(false);
-        buttonNoise.setEnabled(false);
         buttonOnOff.setEnabled(false);
-        buttonRes.setEnabled(false);
     }
 
     private void enableUI(){
+        textNote.setVisibility(View.INVISIBLE);
         spinner.setEnabled(true);
         spinnerPreModes.setEnabled(true);
         seekBarOne.setEnabled(true);
         seekBarTwo.setEnabled(true);
         seekBarThree.setEnabled(true);
         seekBarFour.setEnabled(true);
-        buttonNoise.setEnabled(true);
         buttonOnOff.setEnabled(true);
-        buttonRes.setEnabled(true);
     }
 
     @Override

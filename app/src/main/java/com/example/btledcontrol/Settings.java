@@ -78,7 +78,7 @@ public class Settings extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 //Сохранение данных
-                Toast.makeText(this, "Сохраняем, подождите...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Сохраняем и подключаемся, подождите...", Toast.LENGTH_SHORT).show();
                 SharedPreferences.Editor editor = mSettings.edit();
                 editor.putBoolean(APP_PREFERENCES_DEBUG, debug);
                 if (txt.getText().length() != 0) editor.putString(APP_PREFERENCES_ADRESS, txt.getText().toString());

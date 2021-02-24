@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.btledcontrol.MainActivity">
+    <item
+        android:id="@+id/action_noise"
+        android:orderInCategory="200"
+        android:title="@string/zero"
+        android:icon="@drawable/ic_noiseset"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_reset"
+        android:orderInCategory="200"
+        android:title="@string/refresh"
+        android:icon="@drawable/ic_noiseset"
+        app:showAsAction="never"/>
+</menu>
