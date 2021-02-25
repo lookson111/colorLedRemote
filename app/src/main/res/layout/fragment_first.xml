@@ -12,10 +12,10 @@
         android:layout_height="71dp"
         android:layout_marginStart="30dp"
         android:layout_marginBottom="27dp"
+        android:hapticFeedbackEnabled="true"
         android:text="@string/star"
         app:icon="@android:drawable/ic_lock_power_off"
         app:iconPadding="20dp"
-        android:hapticFeedbackEnabled="true"
         app:iconSize="40dp"
         app:iconTint="#3BFF45"
         app:iconTintMode="src_in"
@@ -86,9 +86,9 @@
         android:layout_height="35dp"
         android:layout_marginStart="30dp"
         android:layout_marginTop="9dp"
+        android:hapticFeedbackEnabled="true"
         android:max="100"
         android:min="0"
-        android:hapticFeedbackEnabled="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textSeekFour" />
 
@@ -168,6 +168,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:layout_marginTop="13dp"
+        android:backgroundTint="#FFFFFF"
         android:text="Отправляемый код"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
@@ -204,5 +205,25 @@
         android:text="Интерфейс отключён пока соединение не будет восстановлено."
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnStar" />
+
+    <ImageView
+        android:id="@+id/imageColor"
+        android:layout_width="65dp"
+        android:layout_height="62dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="28dp"
+        android:src="@drawable/ic_color"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listPreMode"/>
+
+    <TextView
+        android:id="@+id/txtColorConsole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="109dp"
+        android:layout_marginTop="12dp"
+        android:text="100 RGB(255,255,255)"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listPreMode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -27,6 +29,7 @@ import androidx.fragment.app.Fragment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.UUID;
 
 
@@ -63,10 +66,13 @@ public class FirstFragment extends Fragment {
     private static byte[] dimmer =  new byte[5];
     boolean preModeActive = false, debug;
     boolean connectionEstablished = false;
-    TextView logTextLeft,logTextRight,logTxt3,logTxt4,textNote;
+    TextView logTextLeft,logTextRight,logTxt3,logTxt4,textNote,logColor;
     SeekBar seekBarOne,seekBarTwo,seekBarThree,seekBarFour;
     Spinner spinner,spinnerPreModes;
     Button buttonOnOff;
+    ImageView imgColor;
+    Float chsv;
+    int colorRed, colorGreen, colorBlue;
     // Адреса параметров ////////////////////////////////////////////////////////////////////////////
     byte onoff = 1;              //1.x Включение отключение
     byte noiseSet = 2;           //2.x Настройка шумов
@@ -149,8 +155,10 @@ public class FirstFragment extends Fragment {
         logTextRight = view.findViewById(R.id.textViewConsole2);
         logTxt3 = view.findViewById(R.id.txt3);
         logTxt4 = view.findViewById(R.id.txt4);
+        logColor = view.findViewById(R.id.txtColorConsole);
         textNote = view.findViewById(R.id.textNotice);
         buttonOnOff = view.findViewById(R.id.btnStar);
+        imgColor = view.findViewById(R.id.imageColor);
 
         // адаптер для списка режимов и под-режимов
         ArrayAdapter<String> adapterModes = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, data);
@@ -178,6 +186,7 @@ public class FirstFragment extends Fragment {
                 settings[0]= dimmer[1];
                 settings[1] = (byte)progress;
                 eeprom[1] = (byte)progress; //Кидаем в массив для последующего сохранения
+
             }
 
             @Override
@@ -219,7 +228,10 @@ public class FirstFragment extends Fragment {
                 settings[1]= (byte)progress;
                 if (dimmer[3] == smooth) eeprom[3] = (byte)progress; //Кидаем в массив для последующего сохранения
                 if (dimmer[3] == smoothFreq) eeprom[5] = (byte)progress; //Кидаем в массив для последующего сохранения
-                if (dimmer[3] == lightColor) eeprom[7] = (byte)progress; //Кидаем в массив для последующего сохранения
+                if (dimmer[3] == lightColor) {
+                    eeprom[7] = (byte)progress; //Кидаем в массив для последующего сохранения
+                    previewColorCHSV(progress);
+                }
                 if (dimmer[3] == lightSat) eeprom[8] = (byte)progress; //Кидаем в массив для последующего сохранения
                 if (dimmer[3] == rainbowPeriod) eeprom[10] = (byte)progress; //Кидаем в массив для последующего сохранения
                 if (dimmer[3] == runningSpeed) eeprom[12] = (byte)progress; //Кидаем в массив для последующего сохранения
@@ -273,9 +285,10 @@ public class FirstFragment extends Fragment {
                 settings[1]= (byte)position;
                 preModeActive = false;
                 eeprom[0] = (byte)position; //Кидаем в массив для последующего сохранения
+                imgColor.setVisibility(View.INVISIBLE); //Убираем крожок с цветом
                 switch (position){
                     case 0: //Обычный
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -288,7 +301,7 @@ public class FirstFragment extends Fragment {
                         dimmer[3] = smooth;
                         break;
                     case 1: //Радуга спектр
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -303,7 +316,7 @@ public class FirstFragment extends Fragment {
                         dimmer[4] = rainbowStep;
                         break;
                     case 2: //5 полос
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -318,7 +331,7 @@ public class FirstFragment extends Fragment {
                         dimmer[4] = maxCoefFreq;
                         break;
                     case 3: //3 полосы
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -333,7 +346,7 @@ public class FirstFragment extends Fragment {
                         dimmer[4] = maxCoefFreq;
                         break;
                     case 4: //Выделение частот
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -349,7 +362,7 @@ public class FirstFragment extends Fragment {
                         dimmer[4] = maxCoefFreq;
                         break;
                     case 5: //Огонь
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(false);
                             seekBarTwo.setEnabled(false);
                             seekBarThree.setEnabled(false);
@@ -358,7 +371,7 @@ public class FirstFragment extends Fragment {
                         }
                         break;
                     case 6: //Радуга
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -374,7 +387,7 @@ public class FirstFragment extends Fragment {
                         dimmer[4] = lightSat;
                         break;
                     case 7: //Бегущие частоты
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -391,7 +404,7 @@ public class FirstFragment extends Fragment {
 
                         break;
                     case 8: //Анализатор спектра
-                        if (connectionEstablished) {
+                        if (connectionEstablished || debug) {
                             seekBarOne.setEnabled(true);
                             seekBarTwo.setEnabled(true);
                             seekBarThree.setEnabled(true);
@@ -426,6 +439,7 @@ public class FirstFragment extends Fragment {
                 //String item = (String)parent.getItemAtPosition(position);
                 settings[0] = preMode;
                 settings[1]= (byte)position;
+                imgColor.setVisibility(View.INVISIBLE); //Убираем кружок с цветом
                 if (position != 0) preModeActive = true;
                 switch (spinner.getSelectedItemPosition()){
                     case 6:
@@ -527,11 +541,13 @@ public class FirstFragment extends Fragment {
             logTextRight.setVisibility(View.VISIBLE);
             logTxt3.setVisibility(View.VISIBLE);
             logTxt4.setVisibility(View.VISIBLE);
+            logColor.setVisibility(View.VISIBLE);
         } else {
             logTextLeft.setVisibility(View.INVISIBLE);
             logTextRight.setVisibility(View.INVISIBLE);
             logTxt3.setVisibility(View.INVISIBLE);
             logTxt4.setVisibility(View.INVISIBLE);
+            logColor.setVisibility(View.INVISIBLE);
         }
         int progressThree = 0, progressFour = 0;
         if (eeprom[0] == 0) progressThree = eeprom[3]; //Если режим нулевой, достаём третье значение
@@ -599,7 +615,7 @@ public class FirstFragment extends Fragment {
         getSettings();
         //Log.d(TAG, "...onResume - попытка соединения...");
         // Set up a pointer to the remote node using it's address.
-        disableUI();
+        if (debug == false) disableUI();
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
 
         // Two things are needed to make a connection:
@@ -764,5 +780,67 @@ public class FirstFragment extends Fragment {
             errorExit("Критическая ошибка", msg);
         }
         return dataread;
+    }
+
+    //Изменяет цвет элемента в соответствии с палитрой CHSV
+    private void previewColorCHSV(int progress){
+        imgColor.setVisibility(View.VISIBLE);
+        chsv = map(progress, 0,100,0,255,false);
+        colorRed = Math.round(chsvRed(chsv));
+        colorGreen = Math.round(chsvGreen(chsv));
+        colorBlue = Math.round(chsvBlue(chsv));
+        String rs = Integer.toHexString(colorRed);
+        String gs = Integer.toHexString(colorGreen);
+        String bs = Integer.toHexString(colorBlue);
+        if (rs.length() == 1) rs = "0" + rs;
+        if (gs.length() == 1) gs = "0" + gs;
+        if (bs.length() == 1) bs = "0" + bs;
+        String col = "#" + rs + gs + bs;
+        imgColor.setColorFilter(Color.parseColor(col));
+        logColor.setText(progress + " chsv(" + Math.round(chsv) + ") RGB(" + " " + colorRed + ", " + colorGreen + ", " + colorBlue + " )");
+    }
+    //Метод конвертирует диапазон значений из одного в другой. Например число 50 в диапазоне (0-100) равно 127 в диапазоне (0-255)
+    //Если нужно перевернуть значение есть флаг true. Нпример за 30% нужно получить 70%
+    private static float map(float val, float in_min, float in_max, float out_min, float out_max, boolean invert) {
+
+//        float value = (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+//        if (invert) {
+//            if (out_min < 0) value = value * (-1); else value = (value - out_max) * (-1);
+//        }
+        float percentINrange = Math.abs(in_max - in_min) / 100;
+        float percentOUTrange = Math.abs(out_max - out_min) / 100;
+
+        float value = ((val - in_min) / percentINrange) * percentOUTrange;
+        if (invert) value = out_max - value; else value = out_min + value;
+        return constrain(value, out_min, out_max);
+    }
+    //Метод проверяет находится ли значение в указанном диапазоне
+    private static float constrain(float value, float out_min, float out_max) {
+        if (value > out_min && value < out_max) return value;
+        if (value < out_min) return out_min;
+        if (value > out_max) return out_max;
+        return value;
+    }
+    //Метод возвращает значение зелёного цвета в соответствии с палитрой HSV от 0-255, принимая от 0 до 255
+    private static float chsvGreen(float value) {
+        if (value <= 96) return map(value, 0, 96, 0,255, false);
+        if (value > 96 && value <= 128) return map(value, 97, 128, 169,255, true);
+        if (value > 128 && value <= 160) return map(value, 129, 160, 0,169, true);
+        return 0;
+    }
+    //Метод возвращает значение красного цвета в соответствии с палитрой HSV от 0-255, принимая от 0 до 255
+    private static float chsvRed(float value) {
+        if (value <= 32) return map(value, 0, 32, 169,255, true);
+        if (value > 32 && value <= 64) return 169;
+        if (value > 64 && value <= 96) return map(value, 65, 96, 0,169, true);
+        if (value >= 160 && value <=255) return map(value, 160, 255, 0,255, false);
+        return 0;
+    }
+    //Метод возвращает значение синего цвета в соответствии с палитрой HSV от 0-255, принимая от 0 до 255
+    private static float chsvBlue(float value) {
+        if (value >= 96 && value <= 128) return map(value, 96, 128, 0,76, false);
+        if (value > 128 && value <= 160) return map(value, 129, 160, 76,255, false);
+        if (value > 160 && value <= 255) return map(value, 160, 255, 0,255, true);
+        return 0;
     }
 }
